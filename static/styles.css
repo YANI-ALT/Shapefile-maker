@@ -1,0 +1,59 @@
+.map {
+        width: 100%;
+        height:400px;
+      }
+      html, body { overflow: scroll; padding: 0; height: 100%; width: 100%; font-family: 'Open Sans', sans-serif; }
+        body { margin: 10px; background: #fff; }
+       
+         .mapbox1{width:50%; height: 95%;float:left;margin-left:10px;}
+         .mapbox2{ width:48%; height: 100%;float: right;}
+         #map {  width:98%; height: 100%;margin:10px;border: 5px solid #74a9cf;}
+         .info-text{ width:80%; height: 25%;margin: 10px;float:left; font-family: 'Open Sans', sans-serif;}
+         .info-text-instr{ width:100%; height: 25%;padding: 20px;float:left; font-family: 'Open Sans', sans-serif;}
+         #display #dispaly-1
+                {
+                    position:relative; width:90%; height: 100%;margin: 10px;padding-right: 10px;
+
+                }
+
+        #textbox{ width:30%;float:right; margin: 10px}
+        #op-control{
+                width: 20%;
+                margin: 10px;
+            }
+        #reset-graph,#clear-graph,#downld,#go-button{
+                /* border: 4px solid  #74a9cf;
+                background-color: white;
+                border-radius: 12px;
+                font-family: 'Open Sans', sans-serif;
+                margin:10px;
+                outline: none; */
+                
+                margin:10px;
+                
+
+                }
+
+
+                
+        .small-map-title
+        {
+           font-size:15px;
+           weight:bold;
+           margin:0px;
+           font-family: 'Open Sans', sans-serif;
+
+        }
+        #message
+        {
+            color:red;
+            margin:10px;
+
+        }
+        #coord-to-go-1,#coord-to-go-2
+        {
+           
+            width:100px;
+            margin:2px;
+            margin-top:10px;
+        }

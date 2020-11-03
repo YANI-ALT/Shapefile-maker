@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Draw Features</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/css/ol.css" type="text/css">
+    <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/build/ol.js"></script>
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
+
+    <link rel="stylesheet" href="{{url_for('static',filename='styles.css')}}">
+  </head>
+  <body>
+
+    <div class="mapbox1">
+      <div id="map" class="map"></div>
+    </div>
+  
+  <div id="map-matrix" class="mapbox2">
+
+    <div class="info-text">
+      <h3>Shapefile-Maker</h3>
+      <p> This tool allows to make shapefiles by selecting polygons and points. The downloaded file contains required shapefile.
+      </br> The created shapefile will have points in EPSG 4326 coordinate system.
+      </p>
+      
+      <form class="form-inline">
+        <label>Geometry type &nbsp;</label>
+        <select id="type">
+          <option value="Point">Point</option>
+          <option value="Polygon">Polygon</option>
+        </select>
+      </form>
+      <form class="form-inline">
+        <label> Got to &nbsp;</label>
+        <input type="text" id="coord-to-go-1" >
+        <input type="text" id="coord-to-go-2" >
+        <select id="coord-system">
+          <option value="EPSG 4326">EPSG 4326</option>
+          <option value="EPSG 3857">EPSG 3857</option>
+        </select>
+        <a href="#" id="go-button"><button type="button" class='btn btn-outline-primary' onclick=Goto()>Go</button></a>
+
+      </form>
+      
+      <div>
+        <p id="message"> </br></p>
+      </div> 
+      
+
+      <a href="#" id="reset-graph"><button type="button" class='btn btn-outline-primary' onclick=showDownload()>Submit</button></a>     
+      <a href="#" id="clear-graph"><button type="button" class='btn btn-outline-primary' onclick=showDownload()>Clear</button></a>
+    
+      <div id="Download-div" style="display:none;margin-top:10px;">
+      <a href='\download' id="downld"><button type="button" class="btn btn-outline-primary">Download</button>
+      </a>
+      
+    </div>
+      
+
+  </div>
+    <script src="{{ url_for('static', filename='map_file.js') }}"></script>
+    <script type="text/javascript">
+        
+        var source = new ol.source.Vector({wrapX: false});
+
+        var vector = new ol.layer.Vector({
+          source: source,
+        });
+
+        map.addLayer(vector)
+
+        var typeSelect = document.getElementById('type');
+        var coordsysSelect= document.getElementById('coord-system');
+
+        var draw; // global so we can remove it later
+        function addInteraction() { // drawing interaction
+          var value = typeSelect.value;
+          if (value !== 'None') {
+            draw = new ol.interaction.Draw({
+              source: source,
+              type: typeSelect.value,
+
+            });
+            map.addInteraction(draw);
+
+          }
+        }
+
+        function showDownload()
+        {
+          var x=document.getElementById("Download-div"); // shows the download link when submit is clicked
+          var msg=document.getElementById('message')
+          
+          if (x.style.display === "none") {
+              msg.innerHTML="Click Download to obtain shapefile of submission";
+              x.style.display = "block";
+          } else {
+            x.style.display = "none";
+          }
+        }
+        function Goto()
+        {
+          var coord1_inp=document.getElementById("coord-to-go-1");
+          var coord2_inp=document.getElementById("coord-to-go-2");
+          
+          var coord1=coord1_inp.value;// first input coord
+          var coord2=coord2_inp.value;//second input coord
+          coord1_inp.value="";
+          coord2_inp.value="";
+          var goto_pts=[parseFloat(coord1),parseFloat(coord2)];
+          console.log(ol.proj.transform(goto_pts,'EPSG:3857', 'EPSG:4326'))
+
+          if(coordsysSelect.value=='EPSG 4326')
+          {
+            goto_pts = ol.proj.transform(goto_pts,'EPSG:4326', 'EPSG:3857');// converts input coords
+            console.log(coordsysSelect.value)
+            console.log(goto_pts)
+          }
+          
+          map.setView(new ol.View({
+                center: goto_pts,
+                zoom: 20,
+            }))
+        }
+
+        $('a#reset-graph').bind('click', function() {
+          var feat_list=source.getFeatures()
+          var pts=[]
+          console.log(feat_list)
+          if(feat_list.length==0)
+          {
+              var msg=document.getElementById('message')
+              msg.innerHTML="No data in selection clear and try again.";
+
+          }
+          else
+          {
+            console.log("feautres:",feat_list)
+            if(typeSelect.value=='Point')
+            {
+                for (i = 0; i < feat_list.length; i++)
+              {
+                // pts.push(feat_list[i].getGeometry().getCoordinates())
+                const latlong = ol.proj.transform(feat_list[i].getGeometry().getCoordinates(), 'EPSG:3857', 'EPSG:4326');
+                console.log("transformed: ",latlong)
+                pts.push(latlong)
+                console.log(feat_list[i].getGeometry().getCoordinates())
+
+              }
+            }
+            if(typeSelect.value=='Polygon')
+            {
+              poly_pts=feat_list[0].getGeometry().getCoordinates()[0]
+              console.log(poly_pts.length)
+              // console.log("on transform:",ol.proj.transform(feat_list[0].getGeometry().getCoordinates(), 'EPSG:3857', 'EPSG:4326'))
+              for (i = 0; i < poly_pts.length; i++)
+              {
+              console.log(poly_pts[i])
+                const latlong = ol.proj.transform(poly_pts[i], 'EPSG:3857', 'EPSG:4326');
+                console.log("transformed: ",latlong)
+                pts.push(latlong)
+
+
+              }
+            }
+
+            console.log(pts)
+            $.ajax({
+              url: "/shp_coords",
+              type: "POST",
+              data: JSON.stringify({points: pts, value: typeSelect.value}),
+              contentType: "application/json; charset=utf-8",
+              success: function(dat) {
+                console.log(dat);
+                }
+            });
+            
+          }})
+
+        $('a#clear-graph').bind('click', function() {
+          var msg=document.getElementById('message')
+          msg.innerHTML="Cleared";
+
+          source.clear();
+        })
+
+
+        /**
+         * Handle change event.
+         */
+        typeSelect.onchange = function () {
+          map.removeInteraction(draw);
+          addInteraction();
+        };
+
+        addInteraction();
+    </script>
+  </body>
+</html>
